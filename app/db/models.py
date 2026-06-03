@@ -49,6 +49,7 @@ class Lesson(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
+    level: Mapped[str] = mapped_column(String(10), default="A1", index=True) # A1, A2, B1, B2, C1, C2
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
     # Munosabatlar

@@ -78,11 +78,24 @@ async def save_lesson_from_file(
     if not parsed_words:
         raise ValueError("Faylda birorta ham to'g'ri formatdagi so'z topilmadi.")
 
-    # Dars sarlavhasini fayl nomidan olish (.txt kengaytmasini olib tashlaymiz)
-    title = filename.replace(".txt", "").replace("_", " ").strip()
+    import re
+    # Fayl nomidan daraja va dars nomini aniqlash (Masalan: A1_Lesson_1.txt -> level="A1", title="Lesson 1")
+    name_without_ext = filename.replace(".txt", "").strip()
+    
+    # Bo'lish qoidalari: A1_Lesson_1 yoki A1 - Lesson 1
+    parts = re.split(r'[_|-]', name_without_ext, maxsplit=1)
+    
+    level = "A1"
+    title = name_without_ext
+    
+    if len(parts) == 2:
+        parsed_level = parts[0].strip().upper()
+        if parsed_level in ["A1", "A2", "B1", "B2", "C1", "C2"]:
+            level = parsed_level
+            title = parts[1].replace("_", " ").strip()
 
     # Yangi dars yaratish
-    lesson = Lesson(title=title)
+    lesson = Lesson(title=title, level=level)
     db.add(lesson)
     await db.flush()  # ID olish uchun
 
