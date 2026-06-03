@@ -50,6 +50,9 @@ class Lesson(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     level: Mapped[str] = mapped_column(String(10), default="A1", index=True) # A1, A2, B1, B2, C1, C2
+    topic: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    video_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    audio_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
     # Munosabatlar
