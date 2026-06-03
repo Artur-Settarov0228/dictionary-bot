@@ -12,7 +12,7 @@ from telegram.ext import (
     CallbackQueryHandler, ConversationHandler, filters
 )
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, desc
+from sqlalchemy import select, func, desc, delete
 
 from app.core.config import settings
 from app.core.database import AsyncSessionLocal
@@ -239,7 +239,6 @@ async def process_lesson_file(update: Update, context: ContextTypes.DEFAULT_TYPE
             res_lesson = await db.execute(stmt_lesson)
             lesson = res_lesson.scalar_one_or_none()
 
-            from sqlalchemy import delete
             if lesson:
                 # Eski so'zlarni o'chirib tashlaymiz
                 await db.execute(delete(Word).where(Word.lesson_id == lesson.id))
