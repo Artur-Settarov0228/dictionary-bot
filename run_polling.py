@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 def main():
     logger.info("Bot polling rejimida ishga tushmoqda...")
     # Pollingni boshlash (post_init avtomatik tarzda jadvallar yaratadi va handlerlarni ulaydi)
-    application.run_polling()
+    application.run_polling(timeout=30)
 
 
 if __name__ == "__main__":

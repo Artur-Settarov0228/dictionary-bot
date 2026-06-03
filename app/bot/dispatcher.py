@@ -61,4 +61,17 @@ async def post_init(app: Application):
 
 
 # Application obyekti yaratiladi va post_init bog'lanadi
-application = Application.builder().token(settings.BOT_TOKEN).post_init(post_init).build()
+application = (
+    Application.builder()
+    .token(settings.BOT_TOKEN)
+    .post_init(post_init)
+    .connect_timeout(30.0)
+    .read_timeout(30.0)
+    .write_timeout(30.0)
+    .pool_timeout(30.0)
+    .get_updates_connect_timeout(30.0)
+    .get_updates_read_timeout(40.0)
+    .get_updates_write_timeout(30.0)
+    .get_updates_pool_timeout(30.0)
+    .build()
+)

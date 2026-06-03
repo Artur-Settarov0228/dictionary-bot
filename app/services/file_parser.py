@@ -16,13 +16,10 @@ logger = logging.getLogger(__name__)
 def parse_txt_content(content: str) -> List[Tuple[str, str, str]]:
     """
     .txt fayl mazmunini tahlil qiladi va (so'z, talaffuz, tarjima) juftliklarini qaytaradi.
-
-    Args:
-        content: Fayl matni
-
-    Returns:
-        [(english_word, pronunciation, uzbek_translation), ...]
     """
+    if content.strip().startswith(r"{\rtf"):
+        raise ValueError("Fayl RTF formatida (TextEdit). Iltimos, faylni oddiy matn (Plain Text) ko'rinishida saqlang (Mac-da Format -> Make Plain Text).")
+
     words: List[Tuple[str, str, str]] = []
 
     for line_num, line in enumerate(content.splitlines(), start=1):
@@ -32,24 +29,44 @@ def parse_txt_content(content: str) -> List[Tuple[str, str, str]]:
         if not line or line.startswith("#"):
             continue
 
-        parts = [p.strip() for p in line.split("|")]
+        import re
 
-        if len(parts) < 2:
-            logger.warning(f"Satr {line_num} noto'g'ri formatda, o'tkazib yuborildi: {line!r}")
-            continue
-
-        if len(parts) == 2:
-            # Talaffuzsiz format: so'z | tarjima
-            english_word, uzbek_translation = parts[0], parts[1]
-            pronunciation = ""
+        # Avval | bilan ajratishga harakat qilamiz
+        if "|" in line:
+            parts = [p.strip() for p in line.split("|")]
+            if len(parts) >= 2:
+                english_word = parts[0]
+                if len(parts) >= 3:
+                    pronunciation = parts[1]
+                    uzbek_translation = parts[2]
+                else:
+                    pronunciation = ""
+                    uzbek_translation = parts[1]
+            else:
+                logger.warning(f"Satr {line_num} noto'g'ri formatda, o'tkazib yuborildi: {line!r}")
+                continue
         else:
-            # To'liq format: so'z | talaffuz | tarjima
-            english_word = parts[0]
-            pronunciation = parts[1]
-            uzbek_translation = parts[2]
+            # Demak | ishlatilmagan. Regex orqali tahlil qilamiz.
+            # 1. format: [Raqam.] [Inglizcha so'z] [talaffuz] [chiziqcha/tenglik] [Tarjima]
+            # Misol: 1. Shop assistant [shop ə-sis-tənt] – sotuvchi yordamchisi
+            match = re.match(r'^(?:\d+\.\s*)?(.*?)\s*(?:\[(.*?)\])?\s*[-–—=:\t]+\s*(.*)$', line)
+            
+            if match:
+                english_word = match.group(1).strip()
+                pronunciation = match.group(2).strip() if match.group(2) else ""
+                uzbek_translation = match.group(3).strip()
+            else:
+                logger.warning(f"Satr {line_num} noto'g'ri formatda, o'tkazib yuborildi: {line!r}")
+                continue
+
+        # Keraksiz belgilarni tozalash (masalan, agar rtf yoki boshqa xato bo'lsa)
+        english_word = english_word.replace("\\", "").strip()
+        uzbek_translation = uzbek_translation.replace("\\", "").strip()
+        
+        # Agar "1. " english_word ichida qolib ketgan bo'lsa (regex ushlamagan holatlarda), olib tashlash
+        english_word = re.sub(r'^\d+\.\s*', '', english_word)
 
         if not english_word or not uzbek_translation:
-            logger.warning(f"Satr {line_num}: bo'sh so'z yoki tarjima, o'tkazildi.")
             continue
 
         words.append((english_word, pronunciation, uzbek_translation))
@@ -76,7 +93,9 @@ async def save_lesson_from_file(
     parsed_words = parse_txt_content(content)
 
     if not parsed_words:
-        raise ValueError("Faylda birorta ham to'g'ri formatdagi so'z topilmadi.")
+        # Faylning boshlanishini ko'rsatamiz, shunda muammo nima ekanligini ko'rish oson bo'ladi
+        head = content[:100].replace("\n", " ")
+        raise ValueError(f"Faylda birorta ham to'g'ri formatdagi so'z topilmadi.\nFayl boshi: {head!r}")
 
     import re
     # Fayl nomidan daraja va dars nomini aniqlash (Masalan: A1_Lesson_1.txt -> level="A1", title="Lesson 1")

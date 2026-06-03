@@ -228,7 +228,8 @@ async def process_lesson_file(update: Update, context: ContextTypes.DEFAULT_TYPE
             from app.services.file_parser import parse_txt_content
             parsed_words = parse_txt_content(content)
             if not parsed_words:
-                raise ValueError("Faylda birorta ham to'g'ri formatdagi so'z topilmadi.")
+                head = content[:100].replace('\n', ' ')
+                raise ValueError(f"Faylda birorta ham to'g'ri formatdagi so'z topilmadi.\nFayl boshi: {head!r}")
 
             level = context.user_data.get("upload_level", "A1")
             lesson_num = context.user_data.get("upload_lesson_num", 1)
