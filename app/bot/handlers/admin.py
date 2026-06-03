@@ -638,10 +638,10 @@ admin_conversation = ConversationHandler(
             MessageHandler(filters.Document.ALL, process_lesson_file),
         ],
         ADDING_VIDEO: [
-            MessageHandler(filters.TEXT | filters.VIDEO | filters.Document.ALL & ~filters.COMMAND, process_video_link),
+            MessageHandler((filters.TEXT | filters.VIDEO | filters.Document.ALL) & ~filters.COMMAND, process_video_link),
         ],
         ADDING_AUDIO: [
-            MessageHandler(filters.AUDIO | filters.VOICE | filters.Document.ALL & ~filters.COMMAND, process_audio_file),
+            MessageHandler((filters.AUDIO | filters.VOICE | filters.Document.ALL) & ~filters.COMMAND, process_audio_file),
         ]
     },
     fallbacks=[
