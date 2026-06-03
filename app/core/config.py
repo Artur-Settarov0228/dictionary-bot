@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     ADMIN_IDS: str = ""  # "123,456,789" formatida
 
     # Ma'lumotlar bazasi
-    DATABASE_URL: str = "sqlite+aiosqlite:///./vocab_bot.db"
+    DATABASE_URL: str = "postgresql+asyncpg://localhost/bot_english_db"
 
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"

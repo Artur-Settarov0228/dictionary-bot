@@ -12,15 +12,6 @@ engine = create_async_engine(
     echo=False,          # SQL so'rovlarini logga chiqarish (debug uchun True qiling)
 )
 
-# SQLite uchun Foreign Key cheklovlarini yoqish
-from sqlalchemy import event
-@event.listens_for(engine.sync_engine, "connect")
-def set_sqlite_pragma(dbapi_connection, connection_record):
-    # Faqat sqlite bo'lsa yoqamiz
-    if settings.DATABASE_URL.startswith("sqlite"):
-        cursor = dbapi_connection.cursor()
-        cursor.execute("PRAGMA foreign_keys=ON")
-        cursor.close()
 
 # Session factory
 AsyncSessionLocal = async_sessionmaker(
